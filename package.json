@@ -11,7 +11,7 @@
     "release": "node scripts/ci.release.js",
     "package:android": "node scripts/ci.android-release.js",
     "package:ios": "scripts/ci.ios-release.sh",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "DETOX_DISABLE_POD_INSTALL=true node scripts/postinstall.js"
   },
   "repository": {
     "type": "git",
