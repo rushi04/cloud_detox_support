@@ -41,7 +41,7 @@ class Login extends Action {
   }
 
   get timeout() {
-    return 1000;
+    return 100000;
   }
 
   async handle(response) {

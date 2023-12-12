@@ -165,11 +165,11 @@ class DetoxWorker {
     }
 
     // @ts-ignore
-    yield this.device.installUtilBinaries();
+    // yield this.device.installUtilBinaries();
 
-    if (behaviorConfig.init.reinstallApp) {
-      yield this._reinstallAppsOnDevice(signal);
-    }
+    // if (behaviorConfig.init.reinstallApp) {
+    //   yield this._reinstallAppsOnDevice(signal);
+    // }
 
     const appAliases = Object.keys(this._appsConfig);
     if (appAliases.length === 1) {
