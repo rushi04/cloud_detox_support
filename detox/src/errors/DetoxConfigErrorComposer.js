@@ -434,23 +434,6 @@ Check that in your Detox config${this._atPath()}`,
     });
   }
 
-  invalidDeviceMatcherProperties(deviceAlias, expectedProperties) {
-    const { type } = this._resolveSelectedDeviceConfig(deviceAlias);
-    return new DetoxConfigError({
-      message: `Invalid "device" matcher inside the device config.`,
-      hint: `It should strictly match the device query shown below:\n
-{
-  "type": ${J(type)},
-  "device": {
-    ${expectedProperties.map(p => `${J(p)}: ... `).join(',\n    ')} 
-  }
-}
-Check that in your Detox config${this._atPath()}`,
-      debugInfo: this._focusOnDeviceConfig(deviceAlias),
-      inspectOptions: { depth: 4 },
-    });
-  }
-
   // endregion
 
   // region composeAppsConfig
@@ -548,22 +531,6 @@ You have a few options:
 1. Replace the value with the suggestion.
 2. Use a correct device type with this app config. Currently you have ${J(deviceType)}.`,
       debugInfo: this._focusOnAppConfig(appPath),
-      inspectOptions: { depth: 4 },
-    });
-  }
-
-  invalidCloudAppUrl( appPath ) {
-    return new DetoxConfigError({
-      message: `Invalid "app" property in the app config.\nExpected a string:.`,
-      debugInfo: this._focusOnAppConfig(appPath, this._ensureProperty('app')),
-      inspectOptions: { depth: 4 },
-    });
-  }
-
-  invalidCloudAppClientUrl( appPath ) {
-    return new DetoxConfigError({
-      message: `Invalid "appClient" property in the app config.\nExpected a string:.`,
-      debugInfo: this._focusOnAppConfig(appPath, this._ensureProperty('appClient')),
       inspectOptions: { depth: 4 },
     });
   }
@@ -672,18 +639,6 @@ Examine your Detox config${this._atPath()}`,
     });
   }
 
-  invalidSessionProperty(property) {
-    return new DetoxConfigError({
-      message: `session.${property} property is mandatory`,
-      hint: `Expected something like "ws://localhost:8099".\nCheck that in your Detox config${this._atPath()}`,
-      inspectOptions: { depth: 3 },
-      debugInfo: _.omitBy({
-        session: _.get(this.contents, ['session']),
-        ...this._focusOnConfiguration(c => _.pick(c, ['session'])),
-      }, _.isEmpty),
-    });
-  }
-
   invalidSessionIdProperty() {
     return new DetoxConfigError({
       message: `session.sessionId property should be a non-empty string`,
@@ -692,30 +647,6 @@ Examine your Detox config${this._atPath()}`,
       debugInfo: _.omitBy({
         session: _.get(this.contents, ['session']),
         ...this._focusOnConfiguration(c => _.pick(c, ['session'])),
-      }, _.isEmpty),
-    });
-  }
-
-  invalidCloudSessionProperty( capability ) {
-    return new DetoxConfigError({
-      message: `session.${capability} property is not a valid string`,
-      hint: `Check that in your Detox config${this._atPath()}`,
-      inspectOptions: { depth: 3 },
-      debugInfo: _.omitBy({
-        session: _.get(this.contents, ['session']),
-        ...this._focusOnConfiguration(c => _.pick(c, ['session'])),
-      }, _.isEmpty),
-    });
-  }
-
-  invalidCloudAuthProperty( capability ) {
-    return new DetoxConfigError({
-      message: `cloudAuthentication.${capability} property is not valid`,
-      hint: `Check that in your Detox config${this._atPath()}`,
-      inspectOptions: { depth: 3 },
-      debugInfo: _.omitBy({
-        cloudAuthentication: _.get(this.contents, ['cloudAuthentication']),
-        ...this._focusOnConfiguration(c => _.pick(c, ['cloudAuthentication'])),
       }, _.isEmpty),
     });
   }

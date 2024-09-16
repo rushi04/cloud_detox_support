@@ -13,10 +13,8 @@ const log = require('../utils/logger').child({ cat: 'config' });
  */
 function composeDeviceConfig(opts) {
   const deviceConfig = composeDeviceConfigFromAliased(opts);
-  if (deviceConfig.type !== 'android.cloud') {
-    applyCLIOverrides(deviceConfig, opts.cliConfig);
-    deviceConfig.device = unpackDeviceQuery(deviceConfig);
-  }
+  applyCLIOverrides(deviceConfig, opts.cliConfig);
+  deviceConfig.device = unpackDeviceQuery(deviceConfig);
 
   return deviceConfig;
 }
@@ -74,7 +72,7 @@ function validateDeviceConfig({ deviceConfig, errorComposer, deviceAlias }) {
 
   const maybeError = _.attempt(() => environmentFactory.validateConfig(deviceConfig));
   if (_.isError(maybeError)) {
-    throw errorComposer.invalidDeviceType(deviceAlias, deviceConfig, maybeError);
+      throw errorComposer.invalidDeviceType(deviceAlias, deviceConfig, maybeError);
   }
 
   if (!KNOWN_TYPES.has(deviceConfig.type)) {
@@ -158,22 +156,6 @@ function validateDeviceConfig({ deviceConfig, errorComposer, deviceAlias }) {
       if (_.isEmpty(minimalShape)) {
         throw errorComposer.missingDeviceMatcherProperties(deviceAlias, expectedProperties);
       }
-
-      if (deviceConfig.type === 'android.cloud' && !_.isEmpty(minimalShape) && _.difference(expectedProperties, Object.keys(deviceConfig.device)).length !== 0) {
-        throw errorComposer.invalidDeviceMatcherProperties(deviceAlias, expectedProperties);
-      }
-    }
-  }
-  if (deviceConfig.type == 'android.cloud') {
-    const expectedProperties = EXPECTED_DEVICE_MATCHER_PROPS[deviceConfig.type];
-    if (!_.isObject(deviceConfig.device)) {
-      throw errorComposer.invalidDeviceMatcherProperties(deviceAlias, expectedProperties);
-    }
-    const cloudSupportedCaps = ['type', 'device'];
-    let ignoredCloudConfigParams = _.difference(Object.keys(deviceConfig), cloudSupportedCaps);
-    ignoredCloudConfigParams = ignoredCloudConfigParams.concat(_.difference(Object.keys(deviceConfig.device), EXPECTED_DEVICE_MATCHER_PROPS['android.cloud']));
-    if (ignoredCloudConfigParams.length > 0) {
-      log.warn(`[DeviceConfig] The properties ${ignoredCloudConfigParams.join(', ')} are not honoured for device type 'android.cloud'.`);
     }
   }
 }
@@ -250,7 +232,6 @@ const EXPECTED_DEVICE_MATCHER_PROPS = {
   'android.attached': ['adbName'],
   'android.emulator': ['avdName'],
   'android.genycloud': ['recipeUUID', 'recipeName'],
-  'android.cloud': ['name', 'os', 'osVersion']
 };
 
 const KNOWN_TYPES = new Set(Object.keys(EXPECTED_DEVICE_MATCHER_PROPS));

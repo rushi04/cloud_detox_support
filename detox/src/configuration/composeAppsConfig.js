@@ -2,8 +2,6 @@
 const _ = require('lodash');
 const parse = require('yargs-parser');
 
-const logger = require('../../src/utils/logger').child({ cat: 'config' });
-
 const deviceAppTypes = require('./utils/deviceAppTypes');
 
 const CLI_PARSER_OPTIONS = {
@@ -18,14 +16,11 @@ const CLI_PARSER_OPTIONS = {
  * @param {Detox.DetoxDeviceConfig} opts.deviceConfig
  * @param {Detox.DetoxConfiguration} opts.localConfig
  * @param {*} opts.cliConfig
- * @param {Boolean} opts.isCloudSession
  * @returns {Record<string, Detox.DetoxAppConfig>}
  */
 function composeAppsConfig(opts) {
   const appsConfig = composeAppsConfigFromAliased(opts);
-  if (!opts.isCloudSession) {
-    overrideAppLaunchArgs(appsConfig, opts.cliConfig);
-  }
+  overrideAppLaunchArgs(appsConfig, opts.cliConfig);
 
   return appsConfig;
 }
@@ -36,13 +31,12 @@ function composeAppsConfig(opts) {
  * @param {Detox.DetoxDeviceConfig} opts.deviceConfig
  * @param {Detox.DetoxConfig} opts.globalConfig
  * @param {Detox.DetoxConfiguration} opts.localConfig
- * @param {Boolean} opts.isCloudSession
  * @returns {Record<string, Detox.DetoxAppConfig>}
  */
 function composeAppsConfigFromAliased(opts) {
   /* @type {Record<string, Detox.DetoxAppConfig>} */
   const result = {};
-  const { configurationName, errorComposer, deviceConfig, globalConfig, localConfig, isCloudSession } = opts;
+  const { configurationName, errorComposer, deviceConfig, globalConfig, localConfig } = opts;
 
   const isBuiltinDevice = Boolean(deviceAppTypes[deviceConfig.type]);
   if (localConfig.app == null && localConfig.apps == null) {
@@ -97,8 +91,7 @@ function composeAppsConfigFromAliased(opts) {
       errorComposer,
       deviceConfig,
       appConfig,
-      appPath,
-      isCloudSession
+      appPath
     });
 
     if (!result[appName]) {
@@ -132,10 +125,9 @@ function overrideAppLaunchArgs(appsConfig, cliConfig) {
   }
 }
 
-function validateAppConfig({ appConfig, appPath, deviceConfig, errorComposer, isCloudSession }) {
+function validateAppConfig({ appConfig, appPath, deviceConfig, errorComposer }) {
   const deviceType = deviceConfig.type;
   const allowedAppTypes = deviceAppTypes[deviceType];
-  const supportedCloudAppsConfig = ['type', 'app', 'appClient'];
 
   if (allowedAppTypes && !allowedAppTypes.includes(appConfig.type)) {
     throw errorComposer.invalidAppType({
@@ -145,31 +137,16 @@ function validateAppConfig({ appConfig, appPath, deviceConfig, errorComposer, is
     });
   }
 
-  if (appConfig.type !== 'android.cloud') {
-    if (allowedAppTypes && !appConfig.binaryPath) {
-      throw errorComposer.missingAppBinaryPath(appPath);
-    }
-
-    if (appConfig.launchArgs && !_.isObject(appConfig.launchArgs)) {
-      throw errorComposer.malformedAppLaunchArgs(appPath);
-    }
-
-    if (appConfig.type !== 'android.apk' && appConfig.reversePorts) {
-      throw errorComposer.unsupportedReversePorts(appPath);
-    }
+  if (allowedAppTypes && !appConfig.binaryPath) {
+    throw errorComposer.missingAppBinaryPath(appPath);
   }
-  else {
-    if (!_.isString(appConfig.app)) {
-      throw errorComposer.invalidCloudAppUrl(appPath);
-    }
 
-    if (!_.isString(appConfig.appClient)) {
-      throw errorComposer.invalidCloudAppClientUrl(appPath);
-    }
+  if (appConfig.launchArgs && !_.isObject(appConfig.launchArgs)) {
+    throw errorComposer.malformedAppLaunchArgs(appPath);
   }
-  const ignoredCloudConfigParams = _.difference(Object.keys(appConfig), supportedCloudAppsConfig);
-  if (isCloudSession && ignoredCloudConfigParams.length > 0 ) {
-    logger.warn(`[AppConfig] The properties ${ignoredCloudConfigParams.join(', ')} are not honoured for device type 'android.cloud'`); 
+
+  if (appConfig.type !== 'android.apk' && appConfig.reversePorts) {
+    throw errorComposer.unsupportedReversePorts(appPath);
   }
 }
 

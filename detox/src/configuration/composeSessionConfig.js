@@ -1,7 +1,4 @@
-const _ = require('lodash');
-
 const isValidWebsocketURL = require('../utils/isValidWebsocketURL');
-const log = require('../utils/logger').child({ cat: 'config' });
 
 /**
  * @param {{
@@ -9,12 +6,11 @@ const log = require('../utils/logger').child({ cat: 'config' });
  *  globalConfig: Detox.DetoxConfig;
  *  localConfig: Detox.DetoxConfiguration;
  *  errorComposer: import('../errors/DetoxConfigErrorComposer');
- *  isCloudSession: Boolean
  * }} options
  */
 async function composeSessionConfig(options) {
-  const { errorComposer, cliConfig, globalConfig, localConfig, isCloudSession } = options;
-  const cloudSupportedCaps = ['server', 'name', 'project', 'build'];
+  const { errorComposer, cliConfig, globalConfig, localConfig } = options;
+
   const session = {
     ...globalConfig.session,
     ...localConfig.session,
@@ -25,9 +21,6 @@ async function composeSessionConfig(options) {
     if (typeof value !== 'string' || !isValidWebsocketURL(value)) {
       throw errorComposer.invalidServerProperty();
     }
-  }
-  else if (isCloudSession) {
-    throw errorComposer.invalidSessionProperty('server');
   }
 
   if (session.sessionId != null) {
@@ -48,37 +41,12 @@ async function composeSessionConfig(options) {
     session.debugSynchronization = +cliConfig.debugSynchronization;
   }
 
-  if (isCloudSession) {
-    if (session.build != null) {
-      const value = session.build;
-      if (typeof value !== 'string' || value.length === 0) {
-        throw errorComposer.invalidCloudSessionProperty('build');
-      }
-    }
-    if (session.project != null) {
-      const value = session.project;
-      if (typeof value !== 'string' || value.length === 0) {
-        throw errorComposer.invalidCloudSessionProperty('project');
-      }
-    }
-    if (session.name != null) {
-      const value = session.name;
-      if (typeof value !== 'string' || value.length === 0) {
-        throw errorComposer.invalidCloudSessionProperty('name');
-      }
-    }
-    const ignoredCloudConfigParams = _.difference(Object.keys(session), cloudSupportedCaps);
-    if (ignoredCloudConfigParams.length > 0)
-      log.warn(`[SessionConfig] The properties ${ignoredCloudConfigParams.join(', ')} are not honoured for device type 'android.cloud'.`);
-  }
-
   const result = {
     autoStart: !session.server,
     debugSynchronization: 10000,
 
     ...session,
   };
-  // Are we supporting or ignoring debugSynchronization
 
   if (!result.server && !result.autoStart) {
     throw errorComposer.cannotSkipAutostartWithMissingServer();

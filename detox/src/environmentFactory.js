@@ -2,9 +2,9 @@
 const artifactsManagerFactories = require('./artifacts/factories');
 const deviceAllocationFactories = require('./devices/allocation/factories');
 const runtimeDeviceFactories = require('./devices/runtime/factories');
+const envValidationFactories = require('./devices/validation/factories');
 const matchersFactories = require('./matchers/factories');
 const resolveModuleFromPath = require('./utils/resolveModuleFromPath');
-const envValidationFactories = require('./validation/factories');
 
 function validateConfig(deviceConfig) {
   const classes = _getFactoryClasses(deviceConfig);
@@ -34,15 +34,6 @@ function createFactories(deviceConfig) {
     };
   }
   return _getExternalModuleFactories(deviceConfig);
-}
-
-function createGlobalLifecycleHandler(deviceConfig) {
-  if (deviceConfig.type === 'android.genycloud') {
-    const FactoryClass = require('./devices/lifecycle/factories/GenyGlobalLifecycleHandlerFactory');
-    const factory = new FactoryClass();
-    return factory.createHandler();
-  }
-  return null;
 }
 
 function _getFactoryClasses(deviceConfig) {
@@ -84,14 +75,6 @@ function _getFactoryClasses(deviceConfig) {
       matchersFactoryClass = matchersFactories.Ios;
       runtimeDeviceFactoryClass = runtimeDeviceFactories.IosSimulator;
       break;
-    
-    case 'android.cloud':
-      envValidatorFactoryClass = envValidationFactories.Noop;
-      deviceAllocatorFactoryClass = deviceAllocationFactories.Noop;
-      artifactsManagerFactoryClass = artifactsManagerFactories.Noop;
-      matchersFactoryClass = matchersFactories.Android;
-      runtimeDeviceFactoryClass = runtimeDeviceFactories.Noop;
-      break;
 
     default: {
       return null;
@@ -123,5 +106,4 @@ function _getExternalModuleFactories(deviceConfig) {
 module.exports = {
   validateConfig,
   createFactories,
-  createGlobalLifecycleHandler,
 };

@@ -1,7 +1,6 @@
 // @ts-nocheck
 const _ = require('lodash');
 
-const logger = require('../../src/utils/logger').child({ cat: 'config' });
 const InstrumentsArtifactPlugin = require('../artifacts/instruments/InstrumentsArtifactPlugin');
 const LogArtifactPlugin = require('../artifacts/log/LogArtifactPlugin');
 const ScreenshotArtifactPlugin = require('../artifacts/screenshot/ScreenshotArtifactPlugin');
@@ -14,17 +13,15 @@ const VideoArtifactPlugin = require('../artifacts/video/VideoArtifactPlugin');
  * @param {string} configurationName
  * @param {Detox.DetoxConfig} globalConfig
  * @param {Detox.DetoxConfiguration} localConfig
- * @param {Boolean} isCloudSession
  */
 function composeArtifactsConfig({
   cliConfig,
   configurationName,
   localConfig,
   globalConfig,
-  isCloudSession
 }) {
   const artifactsConfig = _.defaultsDeep(
-    !isCloudSession ? extendArtifactsConfig({
+    extendArtifactsConfig({
       rootDir: cliConfig.artifactsLocation,
       plugins: {
         log: cliConfig.recordLogs,
@@ -33,7 +30,7 @@ function composeArtifactsConfig({
         instruments: cliConfig.recordPerformance,
         uiHierarchy: cliConfig.captureViewHierarchy,
       },
-    }) : {},
+    }),
     extendArtifactsConfig(localConfig.artifacts),
     extendArtifactsConfig(globalConfig.artifacts),
     extendArtifactsConfig(false),
@@ -48,9 +45,6 @@ function composeArtifactsConfig({
     artifactsConfig.rootDir
   );
 
-  if (isCloudSession) {
-    validateCloudConfig(artifactsConfig);
-  }
   return artifactsConfig;
 }
 
@@ -89,35 +83,6 @@ function extendArtifactsConfig(config) {
 
 function ifString(value, mapper) {
   return typeof value === 'string' ? mapper(value) : value;
-}
-
-function validateCloudConfig(artifactsConfig) {
-  var plugins = artifactsConfig && artifactsConfig.plugins;
-  const cloudSupportedLogs = ['video', 'deviceLogs', 'networkLogs'];
-  const cloudSupportedCaps = ['plugins'];
-  plugins = cloudSupportedLogs.reduce((accumulator, plugin) => {
-    const defaultEnabled = plugin == 'video' ? true : false;
-    if (typeof accumulator[plugin] === 'object' && Object.keys(accumulator[plugin]).length > 1) {
-      logger.warn(`[ArtifactsConfig] Only the all and none presets are honoured in the ${plugin} plugin for device type 'android.cloud' and default is enabled:${defaultEnabled}.`);
-    }
-    const enabled = _.get(accumulator, `${plugin}.enabled`);
-    if (accumulator[plugin] && enabled) {
-        accumulator[plugin] = {
-            'enabled': enabled
-        };
-    }
-    else {
-        accumulator[plugin] = {
-            'enabled': defaultEnabled
-        };
-    }
-    return accumulator;
-  }, plugins);
-  let ignoredCloudConfigParams = _.difference(Object.keys(artifactsConfig), cloudSupportedCaps);
-  ignoredCloudConfigParams = ignoredCloudConfigParams.concat(_.difference(Object.keys(plugins), cloudSupportedLogs));
-  if (ignoredCloudConfigParams.length > 0)
-    logger.warn(`[ArtifactsConfig] The properties ${ignoredCloudConfigParams} are not honoured for device type 'android.cloud'.`);
-  // Should we delete the ignored properties also?
 }
 
 module.exports = composeArtifactsConfig;

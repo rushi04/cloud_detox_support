@@ -3,5 +3,4 @@ module.exports = {
   'android.attached': ['android.apk'],
   'android.emulator': ['android.apk'],
   'android.genycloud': ['android.apk'],
-  'android.cloud': ['android.cloud']
 };
