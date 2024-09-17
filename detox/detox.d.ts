@@ -33,6 +33,7 @@ declare global {
             logger?: DetoxLoggerConfig;
             session?: DetoxSessionConfig;
             testRunner?: DetoxTestRunnerConfig;
+            cloudAuthentication?: DetoxCloudAuthConfig;
             /** Build command for the entire configuration, overriding individual app build commands. */
             build?: string;
             /** Start command for the entire configuration, overriding individual app start commands. */
@@ -134,6 +135,11 @@ declare global {
             debugSynchronization?: number;
             server?: string;
             sessionId?: string;
+        }
+
+        interface DetoxCloudAuthConfig {
+            username?: string;
+            accessKey?: string;
         }
 
         interface DetoxTestRunnerConfig {
