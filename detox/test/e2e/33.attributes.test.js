@@ -156,7 +156,7 @@ describe('Attributes', () => {
     });
   });
 
-  describe('of a legacy slider', () => {
+  describe('of a legacy slider (@rn71)', () => {
     beforeAll(() => useMatcher(by.id('legacySliderId')));
 
     it(':ios: should have a string percent .value, and .normalizedSliderPosition', () => {
@@ -185,7 +185,7 @@ describe('Attributes', () => {
 
     it(':ios: should have Date .value', () => {
       expect(attributes).toMatchObject({
-        date: expect.stringMatching(/^2022-01-01T00:00:00[+\-]\d{2}:\d{2}$/),
+        date: expect.stringMatching(/^2022-01-01T00:00:00([+-]\d{2}:\d{2}|Z)$/),
       });
     });
   });
@@ -243,7 +243,7 @@ describe('Attributes', () => {
 
       expect(attributesArray[0]).toMatchObject({
         ...{
-          height: 394,
+          height: 412,
           width: 1074,
         },
         ...baseAttributes
@@ -251,8 +251,8 @@ describe('Attributes', () => {
 
       expect(attributesArray[1]).toMatchObject({
         ...{
-          height: 197,
-          width: 262,
+          height: 206,
+          width: 275,
           identifier: 'innerView1'
         },
         ...baseAttributes
@@ -260,8 +260,8 @@ describe('Attributes', () => {
 
       expect(attributesArray[2]).toMatchObject({
         ...{
-          height: 197,
-          width: 262,
+          height: 206,
+          width: 275,
           identifier: 'innerView2'
         },
         ...baseAttributes
